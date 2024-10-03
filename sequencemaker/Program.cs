@@ -58,7 +58,14 @@ class Program
         //string[] FilterSequence = ["H-Alpha"];
 
         string targetObject = "pleiades";
-        string filePath = $"c:/temp/2024-10-02-shootlist-Sequence3-{targetObject}-G.xml";
+
+        string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        string fileName = $"2024-10-02-shootlist-Sequence3-{targetObject}-G.xml";
+        string filePath = Path.Combine(documentsPath, "N.I.N.A", fileName);
+
+
+        filePath = EnsureUniqueFilePath(filePath);
+        Console.WriteLine("Saved to: " + filePath);
 
 
         XmlWriterSettings settings = new XmlWriterSettings();
@@ -84,7 +91,7 @@ class Program
                 double currentExposureTime = exposure_time + overheadTime;
                 totalExposureTimeInSeconds += currentExposureTime;
 
-                Console.WriteLine("Amount is {0}", exposure_time);
+                //Console.WriteLine("Amount is {0}", exposure_time);
                 writer.WriteStartElement("CaptureSequence");
                 writer.WriteElementString("Enabled", "true");
                 writer.WriteElementString("ExposureTime", exposure_time.ToString("0.000"));
@@ -190,6 +197,24 @@ class Program
             }
 
             return writer;
+        }
+
+        static string EnsureUniqueFilePath(string filePath)
+        {
+            // If the file already exists, append a timestamp to avoid overwriting it
+            if (File.Exists(filePath))
+            {
+                string directory = Path.GetDirectoryName(filePath);
+                string filenameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+                string extension = Path.GetExtension(filePath);
+
+                // Append a timestamp to the file name
+                string timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                string newFileName = $"{filenameWithoutExtension}-{timestamp}{extension}";
+                return Path.Combine(directory, newFileName);
+            }
+
+            return filePath;
         }
     }
 }
