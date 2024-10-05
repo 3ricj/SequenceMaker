@@ -21,7 +21,10 @@ class Program
         { "M31-Panel3", ("00", "47", "53", "41", "49", "15", "238.68") },
         { "NAN-Panel1", ("20", "53", "11", "44", "06", "19", "265.34") },
         { "NAN-Panel2", ("20", "59", "39", "44", "11", "19", "266.46") },
+        { "HeartNebula", ("02", "33", "17", "61", "11", "57", "114.9") }
+
         };
+
 
     static void Main(string[] args)
     {
@@ -60,10 +63,10 @@ class Program
 
         double[] target_sequence = sequence2;
 
-        string targetObject = "NAN-Panel1";
+        string targetObject = "NAN-Panel2";
 
         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string fileName = $"2024-10-03-shootlist-Sequence2-{targetObject}-HA.xml";
+        string fileName = $"2024-10-04-shootlist-Sequence1-{targetObject}-HA2.xml";
         string filePath = Path.Combine(documentsPath, "N.I.N.A", fileName);
 
 
