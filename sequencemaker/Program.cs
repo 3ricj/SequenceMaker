@@ -51,22 +51,25 @@ class Program
 
 
         string[] FilterSequence;
+        string targetObject;
 
         //string[] FilterSequence = ["Red", "Green", "Blue", "Luminance"];
 
         //FilterSequence = ["Red", "Green", "Blue"];
         //FilterSequence = ["Luminance"];
-        //FilterSequence = ["H-Alpha", "SII", "OIII"];
-        FilterSequence = ["H-Alpha"];
+        //FilterSequence = ["H-Alpha", "SII", "OIII","H-Alpha",];
+        //FilterSequence = ["H-Alpha"];
+        //FilterSequence = ["SII", "OIII"];
 
-        //FilterSequence = ["Luminance"];
+        FilterSequence = ["Luminance"];
 
-        double[] target_sequence = sequence2;
+        List<double[]> sequenceList = [sequence5, sequence2];
 
-        string targetObject = "NAN-Panel2";
+        targetObject = "pleiades";
+
 
         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string fileName = $"2024-10-04-shootlist-Sequence1-{targetObject}-HA2.xml";
+        string fileName = $"2024-10-08-shootlist-Sequence5and2-{targetObject}-Luminance.xml";
         string filePath = Path.Combine(documentsPath, "N.I.N.A", fileName);
 
 
@@ -91,35 +94,38 @@ class Program
 
         foreach (string FilterSelect in FilterSequence)
         {
-
-            foreach (double exposure_time in target_sequence)
+            foreach (var sequence in sequenceList) // Iterate through each sequence
             {
-                double currentExposureTime = exposure_time + overheadTime;
-                totalExposureTimeInSeconds += currentExposureTime;
+                foreach (double exposure_time in sequence)
+                {
+                    double currentExposureTime = exposure_time + overheadTime;
+                    totalExposureTimeInSeconds += currentExposureTime;
 
-                //Console.WriteLine("Amount is {0}", exposure_time);
-                writer.WriteStartElement("CaptureSequence");
-                writer.WriteElementString("Enabled", "true");
-                writer.WriteElementString("ExposureTime", exposure_time.ToString("0.000"));
-                writer.WriteElementString("ImageType", "FLAT");
+                    Console.WriteLine("Amount is {0}", exposure_time);
+                    writer.WriteStartElement("CaptureSequence");
+                    writer.WriteElementString("Enabled", "true");
+                    writer.WriteElementString("ExposureTime", exposure_time.ToString("0.000"));
+                    writer.WriteElementString("ImageType", "FLAT");
 
-                writer.WriteStartElement("FilterType");
-                writer.WriteElementString("Name", FilterSelect);
-                writer.WriteEndElement();
+                    writer.WriteStartElement("FilterType");
+                    writer.WriteElementString("Name", FilterSelect);
+                    writer.WriteEndElement();
 
-                writer.WriteStartElement("Binning");
-                writer.WriteElementString("X", "1");
-                writer.WriteElementString("Y", "1");
-                writer.WriteEndElement();
-                writer.WriteElementString("Gain", "-1");
-                writer.WriteElementString("Offset", "-1");
-                writer.WriteElementString("TotalExposureCount", "1");
-                writer.WriteElementString("ProgressExposureCount", "0");
-                writer.WriteElementString("Dither", "false");
-                writer.WriteElementString("DitherAmount", "1");
+                    writer.WriteStartElement("Binning");
+                    writer.WriteElementString("X", "1");
+                    writer.WriteElementString("Y", "1");
+                    writer.WriteEndElement();
+                    writer.WriteElementString("Gain", "-1");
+                    writer.WriteElementString("Offset", "-1");
+                    writer.WriteElementString("TotalExposureCount", "1");
+                    writer.WriteElementString("ProgressExposureCount", "0");
+                    writer.WriteElementString("Dither", "false");
+                    writer.WriteElementString("DitherAmount", "1");
 
-                writer.WriteEndElement();
-            }
+                    writer.WriteEndElement();
+                }
+            }        
+
         }
 
         /*
