@@ -42,7 +42,9 @@ class Program
         { "M31-Panel3", ("00", "47", "53", "41", "49", "15", "238.68") },
         { "NAN-Panel1", ("20", "53", "11", "44", "06", "19", "265.34") },
         { "NAN-Panel2", ("20", "59", "39", "44", "11", "19", "266.46") },
-        { "HeartNebula", ("02", "33", "17", "61", "11", "57", "114.9") }
+        { "HeartNebula", ("02", "33", "17", "61", "11", "57", "114.9") },
+        { "ElephantTrunk", ("21", "34", "53", "57", "30", "30", "269.2") }, 
+        { "TapoleNebula", ("05", "22", "31", "33", "25", "45", "213.7") },
 
         };
 
@@ -55,19 +57,23 @@ class Program
 
         //FilterSequence = ["Red", "Green", "Blue"];
         //FilterSequence = ["Luminance"];
-        //FilterSequence = ["H-Alpha", "SII", "OIII","H-Alpha",];
-        FilterSequence = ["Luminance"];
+        FilterSequence = [
+            "H-Alpha", 
+            "SII", 
+            "OIII"
+            ];
+        //FilterSequence = ["H-Alpha"];
         //FilterSequence = ["SII", "OIII"];
 
         //FilterSequence = ["Luminance"];
 
-        List<double[]> sequenceList = [sequence2];
+        List<double[]> sequenceList = [sequence2]; //, sequence2];
 
-        targetObject = "pleiades";
+        targetObject = "TapoleNebula";
 
 
         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string fileName = $"2024-TEST-shootlist-Sequence2x2-{targetObject}-Luminance.xml";
+        string fileName = $"2024-10-11-shootlist-Sequence2-{targetObject}-HASIIOIII.xml";
         string filePath = Path.Combine(documentsPath, "N.I.N.A", fileName);
 
 
@@ -86,7 +92,7 @@ class Program
         writer = WriteTargetDetails(writer, targetObject);
 
 
-        const double overheadTime = 0; // Overhead time in seconds
+        const double overheadTime = 1.5; // Overhead time in seconds
         double totalExposureTimeInSeconds = 0; // Accumulated total time in seconds
         int framecount = 0;
 
