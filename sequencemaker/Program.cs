@@ -1,5 +1,6 @@
 ﻿using ChoETL;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Numerics;
 using System.Xml;
 using System.Xml.Linq;
@@ -53,32 +54,34 @@ class Program
         string[] FilterSequence;
         string targetObject;
 
-        //string[] FilterSequence = ["Red", "Green", "Blue", "Luminance"];
+        FilterSequence = ["Red", "Green", "Blue", "Luminance"];
 
         //FilterSequence = ["Red", "Green", "Blue"];
         //FilterSequence = ["Luminance"];
-        FilterSequence = [
-            "H-Alpha", 
-            "SII", 
-            "OIII"
-            ];
+        //FilterSequence = [
+        //    "H-Alpha", 
+        //    "SII", 
+          //  "OIII"
+        //    ];
         //FilterSequence = ["H-Alpha"];
         //FilterSequence = ["SII", "OIII"];
 
         //FilterSequence = ["Luminance"];
 
-        List<double[]> sequenceList = [sequence2]; //, sequence2];
+        List<double[]> sequenceList = [sequence3];
 
-        targetObject = "TapoleNebula";
+        targetObject = "gammacygni";
 
 
         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string fileName = $"2024-10-11-shootlist-Sequence2-{targetObject}-HASIIOIII.xml";
+        string fileName = $"2026-06-18-shootlist-Sequence15-{targetObject}-LRGB.xml";
         string filePath = Path.Combine(documentsPath, "N.I.N.A", fileName);
 
 
         filePath = EnsureUniqueFilePath(filePath);
         Console.WriteLine("Saved to: " + filePath);
+
+        // To recap: NAN-P2: 1hr SII, 1hr Ha, 3 hours OIII. GammaCygni ~1hr of L, 0.3hr each of RGB
 
 
         XmlWriterSettings settings = new XmlWriterSettings();
@@ -188,6 +191,21 @@ class Program
         int seconds = (int)(totalExposureTimeInSeconds % 60);
 
         Console.WriteLine($"Frame total: {framecount}, taking: {hours} hours, {minutes} minutes, and {seconds} seconds.");
+
+        // Open Explorer with the generated file selected.
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"/select,\"{filePath}\"",
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Could not open Explorer: " + ex.Message);
+        }
 
 
 
