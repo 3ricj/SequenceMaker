@@ -8,7 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ChoETL" Version="1.2.1.66" />
+    <InternalsVisibleTo Include="sequencemaker.tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="templates\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

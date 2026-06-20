@@ -1,0 +1,82 @@
+{
+  "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+  "Strategy": {
+    "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+  },
+  "Name": "Target preparation instructions",
+  "Conditions": {
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+    "$values": []
+  },
+  "IsExpanded": true,
+  "Items": {
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+    "$values": [
+      {
+        "$type": "NINA.Sequencer.SequenceItem.FilterWheel.SwitchFilter, NINA.Sequencer",
+        "Filter": {
+          "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+          "_name": "H-Alpha",
+          "_focusOffset": -27,
+          "_position": 5,
+          "_autoFocusExposureTime": -1.0,
+          "_autoFocusFilter": false,
+          "FlatWizardFilterSettings": {
+            "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+            "FlatWizardMode": 0,
+            "HistogramMeanTarget": 0.5,
+            "HistogramTolerance": 0.1,
+            "MaxFlatExposureTime": 30.0,
+            "MinFlatExposureTime": 0.01,
+            "MaxAbsoluteFlatDeviceBrightness": 1,
+            "MinAbsoluteFlatDeviceBrightness": 0,
+            "Gain": -1,
+            "Offset": -1,
+            "Binning": {
+              "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+              "X": 1,
+              "Y": 1
+            }
+          },
+          "_autoFocusBinning": {
+            "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+            "X": 1,
+            "Y": 1
+          },
+          "_autoFocusGain": -1,
+          "_autoFocusOffset": -1
+        },
+        "ErrorBehavior": 2,
+        "Attempts": 1
+      },
+      {
+        "$type": "NINA.Sequencer.SequenceItem.Platesolving.CenterAndRotate, NINA.Sequencer",
+        "PositionAngle": 266.46,
+        "Inherited": true,
+        "Coordinates": {
+          "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
+          "RAHours": 20,
+          "RAMinutes": 59,
+          "RASeconds": 39.0,
+          "NegativeDec": false,
+          "DecDegrees": 44,
+          "DecMinutes": 11,
+          "DecSeconds": 19.0
+        },
+        "ErrorBehavior": 2,
+        "Attempts": 1
+      },
+      {
+        "$type": "NINA.Sequencer.SequenceItem.Autofocus.RunAutofocus, NINA.Sequencer",
+        "ErrorBehavior": 2,
+        "Attempts": 1
+      }
+    ]
+  },
+  "Triggers": {
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+    "$values": []
+  },
+  "ErrorBehavior": 0,
+  "Attempts": 1
+}

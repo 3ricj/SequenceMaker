@@ -1,0 +1,194 @@
+{
+  "Red": {
+    "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+    "_name": "Red",
+    "_focusOffset": 1,
+    "_position": 1,
+    "_autoFocusExposureTime": -1.0,
+    "_autoFocusFilter": false,
+    "FlatWizardFilterSettings": {
+      "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+      "FlatWizardMode": 0,
+      "HistogramMeanTarget": 0.5,
+      "HistogramTolerance": 0.1,
+      "MaxFlatExposureTime": 30.0,
+      "MinFlatExposureTime": 0.01,
+      "MaxAbsoluteFlatDeviceBrightness": 1,
+      "MinAbsoluteFlatDeviceBrightness": 0,
+      "Gain": -1,
+      "Offset": -1,
+      "Binning": {
+        "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+        "X": 1,
+        "Y": 1
+      }
+    },
+    "_autoFocusBinning": {
+      "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+      "X": 1,
+      "Y": 1
+    },
+    "_autoFocusGain": -1,
+    "_autoFocusOffset": -1
+  },
+  "Green": {
+    "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+    "_name": "Green",
+    "_focusOffset": -3,
+    "_position": 2,
+    "_autoFocusExposureTime": -1.0,
+    "_autoFocusFilter": false,
+    "FlatWizardFilterSettings": {
+      "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+      "FlatWizardMode": 0,
+      "HistogramMeanTarget": 0.5,
+      "HistogramTolerance": 0.1,
+      "MaxFlatExposureTime": 30.0,
+      "MinFlatExposureTime": 0.01,
+      "MaxAbsoluteFlatDeviceBrightness": 1,
+      "MinAbsoluteFlatDeviceBrightness": 0,
+      "Gain": -1,
+      "Offset": -1,
+      "Binning": {
+        "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+        "X": 1,
+        "Y": 1
+      }
+    },
+    "_autoFocusBinning": {
+      "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+      "X": 1,
+      "Y": 1
+    },
+    "_autoFocusGain": -1,
+    "_autoFocusOffset": -1
+  },
+  "Blue": {
+    "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+    "_name": "Blue",
+    "_focusOffset": 4,
+    "_position": 3,
+    "_autoFocusExposureTime": -1.0,
+    "_autoFocusFilter": false,
+    "FlatWizardFilterSettings": {
+      "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+      "FlatWizardMode": 0,
+      "HistogramMeanTarget": 0.5,
+      "HistogramTolerance": 0.1,
+      "MaxFlatExposureTime": 30.0,
+      "MinFlatExposureTime": 0.01,
+      "MaxAbsoluteFlatDeviceBrightness": 1,
+      "MinAbsoluteFlatDeviceBrightness": 0,
+      "Gain": -1,
+      "Offset": -1,
+      "Binning": {
+        "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+        "X": 1,
+        "Y": 1
+      }
+    },
+    "_autoFocusBinning": {
+      "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+      "X": 1,
+      "Y": 1
+    },
+    "_autoFocusGain": -1,
+    "_autoFocusOffset": -1
+  },
+  "Luminance": {
+    "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+    "_name": "Luminance",
+    "_focusOffset": 0,
+    "_position": 0,
+    "_autoFocusExposureTime": -1.0,
+    "_autoFocusFilter": true,
+    "FlatWizardFilterSettings": {
+      "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+      "FlatWizardMode": 0,
+      "HistogramMeanTarget": 0.5,
+      "HistogramTolerance": 0.1,
+      "MaxFlatExposureTime": 30.0,
+      "MinFlatExposureTime": 0.01,
+      "MaxAbsoluteFlatDeviceBrightness": 1,
+      "MinAbsoluteFlatDeviceBrightness": 0,
+      "Gain": -1,
+      "Offset": -1,
+      "Binning": {
+        "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+        "X": 1,
+        "Y": 1
+      }
+    },
+    "_autoFocusBinning": {
+      "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+      "X": 1,
+      "Y": 1
+    },
+    "_autoFocusGain": -1,
+    "_autoFocusOffset": -1
+  },
+  "H-Alpha": {
+    "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+    "_name": "H-Alpha",
+    "_focusOffset": -27,
+    "_position": 5,
+    "_autoFocusExposureTime": -1.0,
+    "_autoFocusFilter": false,
+    "FlatWizardFilterSettings": {
+      "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+      "FlatWizardMode": 0,
+      "HistogramMeanTarget": 0.5,
+      "HistogramTolerance": 0.1,
+      "MaxFlatExposureTime": 30.0,
+      "MinFlatExposureTime": 0.01,
+      "MaxAbsoluteFlatDeviceBrightness": 1,
+      "MinAbsoluteFlatDeviceBrightness": 0,
+      "Gain": -1,
+      "Offset": -1,
+      "Binning": {
+        "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+        "X": 1,
+        "Y": 1
+      }
+    },
+    "_autoFocusBinning": {
+      "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+      "X": 1,
+      "Y": 1
+    },
+    "_autoFocusGain": -1,
+    "_autoFocusOffset": -1
+  },
+  "SII": {
+    "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+    "_name": "SII",
+    "_focusOffset": 25,
+    "_position": 4,
+    "_autoFocusExposureTime": -1.0,
+    "_autoFocusFilter": false,
+    "FlatWizardFilterSettings": {
+      "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+      "FlatWizardMode": 0,
+      "HistogramMeanTarget": 0.5,
+      "HistogramTolerance": 0.1,
+      "MaxFlatExposureTime": 30.0,
+      "MinFlatExposureTime": 0.01,
+      "MaxAbsoluteFlatDeviceBrightness": 1,
+      "MinAbsoluteFlatDeviceBrightness": 0,
+      "Gain": -1,
+      "Offset": -1,
+      "Binning": {
+        "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+        "X": 1,
+        "Y": 1
+      }
+    },
+    "_autoFocusBinning": {
+      "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+      "X": 1,
+      "Y": 1
+    },
+    "_autoFocusGain": -1,
+    "_autoFocusOffset": -1
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
+  "Hours": 3,
+  "Minutes": 20,
+  "MinutesOffset": 0,
+  "Seconds": 16,
+  "SelectedProvider": {
+    "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
+  }
+}
