@@ -14,6 +14,7 @@ class SequenceValidator
         ValidateIsExpanded(root);
         ValidateMeridianFlip(root);
         ValidateSmartExposureCount(root, config);
+        ValidateTargetCount(root, config);
         ValidateRefs(root);
         ValidateAlertTriggersIfEnabled(root, config);
         return _errors.Count == 0;
@@ -28,8 +29,9 @@ class SequenceValidator
     void ValidateDawnPlacement(JObject root)
     {
         int dawnCount = 0;
-        int dawnOnImaging = 0;
+        int dawnOnLastImaging = 0;
         int dawnElsewhere = 0;
+        var lastImaging = NinaJsonHelper.FindAllByName(root, "Target imaging instructions", "Sequential").LastOrDefault();
 
         foreach (var container in NinaJsonHelper.WalkObjects(root).Where(o => o.ContainsKey("Conditions")))
         {
@@ -38,8 +40,8 @@ class SequenceValidator
                 if (!IsNauticalDawn(cond))
                     continue;
                 dawnCount++;
-                if (container["Name"]?.ToString() == "Target imaging instructions")
-                    dawnOnImaging++;
+                if (ReferenceEquals(container, lastImaging))
+                    dawnOnLastImaging++;
                 else
                     dawnElsewhere++;
             }
@@ -47,28 +49,31 @@ class SequenceValidator
 
         if (dawnCount != 1)
             _errors.Add($"Expected exactly 1 Nautical Dawn TimeCondition, found {dawnCount}.");
-        if (dawnOnImaging != 1)
-            _errors.Add("Nautical Dawn TimeCondition must be on 'Target imaging instructions'.");
+        if (dawnOnLastImaging != 1)
+            _errors.Add("Nautical Dawn TimeCondition must be on the last target's 'Target imaging instructions'.");
         if (dawnElsewhere > 0)
-            _errors.Add("Nautical Dawn TimeCondition must not appear on Start/End or other containers.");
+            _errors.Add("Nautical Dawn TimeCondition must not appear on Start/End, earlier targets, or other containers.");
     }
 
     void ValidatePrepAbort(JObject root)
     {
-        var prep = NinaJsonHelper.FindFirstByName(root, "Target preparation instructions", "Sequential");
-        if (prep == null)
+        var preps = NinaJsonHelper.FindAllByName(root, "Target preparation instructions", "Sequential").ToList();
+        if (preps.Count == 0)
         {
             _errors.Add("Missing 'Target preparation instructions' container.");
             return;
         }
 
-        foreach (var item in NinaJsonHelper.GetValues(prep, "Items").OfType<JObject>())
+        foreach (var prep in preps)
         {
-            var t = NinaJsonHelper.ShortType(item);
-            if (t is "SwitchFilter" or "CenterAndRotate" or "RunAutofocus")
+            foreach (var item in NinaJsonHelper.GetValues(prep, "Items").OfType<JObject>())
             {
-                if (item["ErrorBehavior"]?.Value<int>() != 2)
-                    _errors.Add($"Prep instruction {t} must have ErrorBehavior=2 (Abort).");
+                var t = NinaJsonHelper.ShortType(item);
+                if (t is "SwitchFilter" or "CenterAndRotate" or "RunAutofocus")
+                {
+                    if (item["ErrorBehavior"]?.Value<int>() != 2)
+                        _errors.Add($"Prep instruction {t} must have ErrorBehavior=2 (Abort).");
+                }
             }
         }
     }
@@ -94,6 +99,13 @@ class SequenceValidator
         int count = NinaJsonHelper.FindByType(root, "SmartExposure").Count();
         if (count != config.ExpectedFrameCount)
             _errors.Add($"Expected {config.ExpectedFrameCount} SmartExposure items, found {count}.");
+    }
+
+    void ValidateTargetCount(JObject root, SequenceConfig config)
+    {
+        int count = NinaJsonHelper.FindByType(root, "DeepSkyObjectContainer").Count();
+        if (count != config.Targets.Count)
+            _errors.Add($"Expected {config.Targets.Count} DeepSkyObjectContainer items, found {count}.");
     }
 
     void ValidateRefs(JObject root)

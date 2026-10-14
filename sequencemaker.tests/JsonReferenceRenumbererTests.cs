@@ -65,9 +65,7 @@ public class JsonReferenceRenumbererTests
     {
         var config = new SequenceConfig
         {
-            TargetObject = "gammacygni",
-            FilterSequence = ["Red"],
-            SequenceList = [[1.0, 2.0, 3.0]],
+            Targets = [new("gammacygni", [new("Red", [1.0, 2.0, 3.0])])],
             FileNameBase = "test-sequence",
             NinaOutputFolder = Path.GetTempPath()
         };
@@ -91,5 +89,41 @@ public class JsonReferenceRenumbererTests
         Assert.Equal("NauticalDawnProvider", NinaJsonHelper.ShortType(dawn["SelectedProvider"]));
 
         Assert.Equal(3, NinaJsonHelper.FindByType(root, "SmartExposure").Count());
+    }
+
+    [Fact]
+    public void Builder_MultiTarget_DawnOnLastTargetOnly_AllPrepsAbort()
+    {
+        var config = new SequenceConfig
+        {
+            Targets =
+            [
+                new("M31-Panel3", [new("Red", [1.0, 2.0]), new("Green", [3.0])]),
+                new("M31-Panel1", [new("H-Alpha", [4.0])]),
+            ],
+            FileNameBase = "test-multi",
+            NinaOutputFolder = Path.GetTempPath()
+        };
+
+        var root = new NinaAdvancedSequenceBuilder(config).Build();
+        var validator = new SequenceValidator();
+        Assert.True(validator.Validate(root, config), string.Join("; ", validator.Errors));
+
+        var dsos = NinaJsonHelper.FindByType(root, "DeepSkyObjectContainer").ToList();
+        Assert.Equal(["M31-Panel3", "M31-Panel1"], dsos.Select(d => d["Name"]!.ToString()));
+
+        var imaging = NinaJsonHelper.FindAllByName(root, "Target imaging instructions", "Sequential").ToList();
+        Assert.Empty(NinaJsonHelper.GetValues(imaging[0], "Conditions"));
+        Assert.Single(NinaJsonHelper.GetValues(imaging[1], "Conditions"));
+        Assert.Equal(3, NinaJsonHelper.FindByType(imaging[0], "SmartExposure").Count());
+
+        foreach (var prep in NinaJsonHelper.FindAllByName(root, "Target preparation instructions", "Sequential"))
+        {
+            foreach (var item in NinaJsonHelper.GetValues(prep, "Items").OfType<JObject>())
+            {
+                if (NinaJsonHelper.ShortType(item) is "SwitchFilter" or "CenterAndRotate" or "RunAutofocus")
+                    Assert.Equal(2, item["ErrorBehavior"]!.Value<int>());
+            }
+        }
     }
 }

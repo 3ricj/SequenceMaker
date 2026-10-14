@@ -1,0 +1,114 @@
+SequenceMaker - Cursor project notes
+=====================================
+
+WHAT THIS PROJECT IS
+- C# console app (sequencemaker/Program.cs, .NET / dotnet 10 available).
+- Today it generates a N.I.N.A. *basic* sequence file in XML (<CaptureSequenceList>),
+  written to <MyDocuments>\N.I.N.A\...xml.
+- It builds a ramp of exposure times (sequence1..sequence5 arrays) per filter, target
+  coords come from the targetDetails dictionary in Program.cs.
+- NOTE: Program.cs currently writes ImageType = "FLAT" for every CaptureSequence
+  (line ~117). For deep-sky LIGHT frames this is almost certainly wrong/leftover.
+  This carries through into the advanced JSON (ImageType "FLAT" on every TakeExposure).
+  Flag/confirm before automating.
+
+CURRENT MANUAL WORKFLOW (what the user wants to automate away)
+1. Make basic sequence in SequenceMaker.
+2. Open in N.I.N.A., convert to Advanced Sequence, save (UI hangs badly when targets expanded).
+3. Text-editor search/replace every  "IsExpanded": true  ->  "IsExpanded": false
+   so the advanced-sequence tree is usable in the UI.
+4. Manually add: Smart Meridian Flip trigger, Sequence Start template, Sequence End template.
+5. Manually change prep instructions (slew / center & rotate / rotation / autofocus / filter)
+   so On-Error = ABORT (so the run stops on a real problem instead of plowing ahead).
+
+ADVANCED SEQUENCE JSON FORMAT (the "nasty" target format)
+- Newtonsoft JSON with PreserveReferencesHandling + TypeNameHandling:
+  every object has "$id", "$type"; collections use "$values"; back-pointers use "$ref"
+  (e.g. each item's "Parent": { "$ref": "<id>" }).
+- Tree: SequenceRootContainer -> Items: StartAreaContainer "Start",
+  TargetAreaContainer "Targets" (DeepSkyObjectContainer per target), EndAreaContainer "End".
+- Root holds the SmartMeridianFlipTrigger.
+- Bulk of the file is repeated SmartExposure blocks (SwitchFilter + TakeExposure +
+  LoopCondition + DitherAfterExposures), differing only by ExposureTime / filter.
+- ErrorBehavior enum (N.I.N.A. "On error", ordinal):
+    0 = Continue, 1 = Skip current instruction set, 2 = Abort, 3 = Skip to end of sequence.
+
+NIGHT 5 MISTAKES (detected 2026-06-19) - file:
+  ...2026-06-18 Pateros Night 5\2026-06-18-shootlist-Sequence15-gammacygni-LRGB.json
+
+BUG 1 - prep On-Error not set to Abort
+- ALL 1706 items have ErrorBehavior = 0 (Continue). The target-prep SwitchFilter,
+  CenterAndRotate, and RunAutofocus were NOT set to Abort.
+- Compare Night 4 (...NAN-panel2.json): exactly those 3 prep items = ErrorBehavior 2 (Abort).
+- So on Night 5 the "abort on failure for centering/rotation/focus" step was forgotten;
+  if plate-solve/rotation/AF failed, it would have kept imaging anyway.
+
+BUG 2 - "loop until Nautical Dawn" condition attached to the WRONG container
+- A loop condition is only effective on the container you want to repeat. To image until
+  dawn it must sit on the "Target imaging instructions" (or DSO/target) container.
+- Night 5: the only container condition in the whole file is
+  TimeCondition(NauticalDawnProvider, 03:20:16) attached to the END area's
+  "Basic Sequence End" container -> inert. The imaging container has NO loop condition,
+  so the 336-frame list ran ONCE and stopped early (did not image to dawn).
+- Night 4: no container conditions anywhere (it just happened to run long enough).
+- CORRECT FIX / automation rule: always put Loop Condition (Time -> until Nautical Dawn)
+  on the Target imaging instructions container so the exposure list repeats until dawn.
+
+BUG 3 - $id property ordering (fixed 2026-06-19)
+- N.I.N.A. failed to load generated JSON: "Unexpected token when deserializing object:
+  String. Path 'Conditions.$id'" -> UnknownSequenceItem -> InvalidCastException to ISequenceContainer.
+- Cause: JsonReferenceRenumberer.AssignIds did obj["$id"] = ... which APPENDS $id for objects
+  created without one (CreateObservableCollection collections, root, Strategy). Newtonsoft's
+  PreserveReferencesHandling requires $id to be the FIRST property (before $type/$values/data).
+- Fix: AssignIds now Remove("$id") + AddFirst(...) so $id is always first.
+  Regression test: Renumber_PlacesIdAsFirstProperty_OnObjectsCreatedWithoutOne.
+- RULE: any newly-constructed JObject that gets a $id must keep $id first. Don't go back to
+  obj["$id"] = ... append semantics.
+
+TOOLING ON THIS MACHINE (for analyzing these files)
+- No `python`/`python3` on PATH and no `jq`. Use `py` (Python 3.13) launcher.
+- dotnet 10 available.
+- The two reference JSON files live on network share \\192.168.8.16\d\2026-06-13 Pateros Astro\...
+- Read big JSON with encoding="utf-8-sig" (BOM present).
+- Temp analysis scripts kept in %TEMP% (nina_analyze*.py, nina_diff.py), not in repo.
+
+PROPOSED AUTOMATION DIRECTION (feasibility = good; pending user go-ahead)
+- IMPLEMENTED 2026-06-19: Advanced JSON output via clone-from-template + JsonReferenceRenumberer.
+- Runs ONLY from Visual Studio (F5). NO command-line options / flags / arg parsing at all.
+- ALL config is inline at the top of Main in Program.cs as plain variables/bools:
+    targetObject, filterSequence (commented-out alternatives), sequenceList,
+    fileNameBase, writeXml/writeJson bools, startTemplateName/endTemplateName.
+- Exposure ramp patterns (Sequence1..Sequence5) live in SequenceRamps.cs.
+- Known targets + coords live in TargetCatalog.cs.
+- Output: writes .xml and/or .json to Documents\N.I.N.A (writeXml/writeJson bools).
+- Templates in sequencemaker/templates/ (bundled). startTemplateName/endTemplateName null = bundled
+  defaults; set to a template name to use one from the N.I.N.A\Templates folder.
+- Tests: dotnet test (sequencemaker.tests)
+- Alert framework hooks in place (TemplateSlot AlertTriggersRoot/Prep/PrepFailureSentinel); Phase 4 Ground Station fragments not added yet.
+- DO NOT reintroduce presets/catalogs/CLI parsing. Keep config as dumb inline variables in Program.cs.
+
+MULTI-TARGET / PER-FILTER RAMPS (added 2026-10-12)
+- Config is now `List<TargetPlan> targets` in Program.cs (ShootPlan.cs). Each TargetPlan =
+  target name + ordered list of ExposureBlock(filter, ramp). Replaces targetObject/filterSequence/sequenceList.
+  TargetPlan.EveryFilter(...) reproduces the old "every ramp on every filter" style.
+- User shorthand: "R 3 20 min" = Red with SequenceRamps.Sequence3. Number = ramp number.
+  Sequence1/2/5 ~1 hr, Sequence3/4 ~20 min. "Ha" = "H-Alpha", "L" = "Luminance".
+- One DeepSkyObjectContainer per target, each with its own prep (all prep set to Abort).
+- Nautical-dawn loop goes ONLY on the LAST target's imaging container (earlier targets run once).
+- XML with >1 target is written as <ArrayOfCaptureSequenceList> (N.I.N.A. target set).
+- First generated: 2026-10-12-shootlist-M31-Panels3-2-1 (Panel3 -> Panel2 -> Panel1).
+- 2026-10-13: generated ...EasternVeil-M31Panel2-FlamingStar (~10h total incl overhead).
+
+TARGET CATALOG (TargetCatalog.cs)
+- 2026-10-13: added 17 targets from user's Oct 14-15 target table (M31, NorthAmerica, M33, IC1396,
+  WesternVeil, Pelican, EasternVeil, Pacman, California, Veil, FlamingStar, Jellyfish, CygnusLoop,
+  Merope, Wizard, Spaghetti, FlyingBat). Catalog-center J2000 coords, PositionAngle 0.0 (not yet framed).
+- RULE: never change existing catalog values (user-framed panels/PAs). Only append new ones.
+- Builder hardcodes NegativeDec=false -> southern-dec targets would be wrong; all current ones are north.
+- filter-map.json has NO OIII entry -> fallback FilterInfo (name only, position 0). Relies on N.I.N.A.
+  matching filters by name. Add real OIII entry (position/focus offset) if user supplies it.
+
+USER PREFERENCES / RULES
+- NEVER commit or push to any repo on the user's behalf.
+- NEVER change system settings without asking.
+- Keep temp scripts in %TEMP%, clean up, don't leave a mess in the repo.

@@ -13,18 +13,23 @@ static class XmlSequenceWriter
         var settings = new XmlWriterSettings { Indent = true };
         using var writer = XmlWriter.Create(filePath, settings);
         writer.WriteStartDocument();
-        writer.WriteStartElement("CaptureSequenceList");
-        WriteTargetAttributes(writer, config.TargetObject);
+        bool targetSet = config.Targets.Count > 1;
+        if (targetSet)
+            writer.WriteStartElement("ArrayOfCaptureSequenceList");
 
         const double overheadTime = 1.5;
         double totalExposureTimeInSeconds = 0;
         int framecount = 0;
 
-        foreach (string filterSelect in config.FilterSequence)
+        foreach (var plan in config.Targets)
         {
-            foreach (var sequence in config.SequenceList)
+            writer.WriteStartElement("CaptureSequenceList");
+            WriteTargetAttributes(writer, plan.TargetName);
+
+            foreach (var block in plan.Blocks)
             {
-                foreach (double exposureTime in sequence)
+                string filterSelect = block.Filter;
+                foreach (double exposureTime in block.Ramp)
                 {
                     totalExposureTimeInSeconds += exposureTime + overheadTime;
                     framecount++;
@@ -50,9 +55,12 @@ static class XmlSequenceWriter
                     writer.WriteEndElement();
                 }
             }
+
+            writer.WriteEndElement();
         }
 
-        writer.WriteEndElement();
+        if (targetSet)
+            writer.WriteEndElement();
         writer.WriteEndDocument();
 
         return (filePath, framecount, totalExposureTimeInSeconds);

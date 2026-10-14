@@ -53,20 +53,21 @@ class NinaAdvancedSequenceBuilder
     JObject BuildTargetArea()
     {
         var targetArea = _registry.Clone(TemplateSlot.TargetAreaShell);
-        targetArea["Items"] = NinaJsonHelper.CreateObservableCollection(new JArray { BuildDeepSkyObject() });
+        var dsos = new JArray(_config.Targets.Select(BuildDeepSkyObject).ToArray());
+        targetArea["Items"] = NinaJsonHelper.CreateObservableCollection(dsos);
         return targetArea;
     }
 
-    JObject BuildDeepSkyObject()
+    JObject BuildDeepSkyObject(TargetPlan plan)
     {
-        if (!TargetCatalog.TryGet(_config.TargetObject, out var target))
-            throw new InvalidOperationException($"Unknown target '{_config.TargetObject}'.");
+        if (!TargetCatalog.TryGet(plan.TargetName, out var target))
+            throw new InvalidOperationException($"Unknown target '{plan.TargetName}'.");
 
         var dso = _registry.Clone(TemplateSlot.DsoShell);
-        dso["Name"] = _config.TargetObject;
+        dso["Name"] = plan.TargetName;
 
         var inputTarget = (JObject)dso["Target"]!;
-        inputTarget["TargetName"] = _config.TargetObject;
+        inputTarget["TargetName"] = plan.TargetName;
         inputTarget["PositionAngle"] = target.PositionAngle;
         inputTarget["Expanded"] = false;
 
@@ -79,14 +80,14 @@ class NinaAdvancedSequenceBuilder
         coords["DecMinutes"] = int.Parse(target.DecMinutes);
         coords["DecSeconds"] = double.Parse(target.DecSeconds);
 
-        var prep = BuildTargetPrep(target);
-        var imaging = BuildImagingContainer();
+        var prep = BuildTargetPrep(target, plan.Blocks[0].Filter);
+        var imaging = BuildImagingContainer(plan);
 
         dso["Items"] = NinaJsonHelper.CreateObservableCollection(new JArray { prep, imaging });
         return dso;
     }
 
-    JObject BuildTargetPrep(TargetInfo target)
+    JObject BuildTargetPrep(TargetInfo target, string firstFilter)
     {
         var prep = _registry.Clone(TemplateSlot.TargetPrep);
         var items = NinaJsonHelper.GetValues(prep, "Items");
@@ -96,7 +97,6 @@ class NinaAdvancedSequenceBuilder
             switch (NinaJsonHelper.ShortType(item))
             {
                 case "SwitchFilter":
-                    var firstFilter = _config.FilterSequence[0];
                     _registry.TryGetFilter(firstFilter, out var filterInfo);
                     item["Filter"] = filterInfo;
                     break;
@@ -126,18 +126,15 @@ class NinaAdvancedSequenceBuilder
         return prep;
     }
 
-    JObject BuildImagingContainer()
+    JObject BuildImagingContainer(TargetPlan plan)
     {
         var imaging = _registry.Clone(TemplateSlot.ImagingContainerShell);
         var exposures = new JArray();
 
-        foreach (var filter in _config.FilterSequence)
+        foreach (var block in plan.Blocks)
         {
-            foreach (var sequence in _config.SequenceList)
-            {
-                foreach (var exposureTime in sequence)
-                    exposures.Add(BuildSmartExposure(filter, exposureTime));
-            }
+            foreach (var exposureTime in block.Ramp)
+                exposures.Add(BuildSmartExposure(block.Filter, exposureTime));
         }
 
         NinaJsonHelper.SetValues(imaging, "Items", exposures, NinaJsonHelper.ObservableCollectionType);

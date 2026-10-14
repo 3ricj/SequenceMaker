@@ -15,22 +15,45 @@ class Program
         //   Sequence5 - one hour, ~1s..60s ramp with dither markers. For Luminance.
         // (Dither markers are the tiny 0.001/0.002/... values that trigger a dither.)
 
-        string targetObject = "gammacygni";
+        // Targets are shot in order, each with its own slew / center / autofocus.
+        // Blocks within a target are shot in the order listed: (filter, ramp).
+        // Only the LAST target loops until Nautical Dawn; earlier targets run once.
+        // Filter names: Red, Green, Blue, Luminance, H-Alpha, SII, OIII.
+        List<TargetPlan> targets =
+        [
+            new("EasternVeil",                                  // 4h
+            [
+                new("H-Alpha",   SequenceRamps.Sequence1),      // 1 hr
+                new("OIII",      SequenceRamps.Sequence1),      // 1 hr
+                new("SII",       SequenceRamps.Sequence1),      // 1 hr
+                new("Red",       SequenceRamps.Sequence3),      // 20 min
+                new("Green",     SequenceRamps.Sequence3),      // 20 min
+                new("Blue",      SequenceRamps.Sequence3),      // 20 min
+            ]),
+            new("M31-Panel2",                                   // 1h
+            [
+                new("Luminance", SequenceRamps.Sequence3),      // 20 min
+                new("Red",       SequenceRamps.Sequence3),      // 20 min
+                new("Blue",      SequenceRamps.Sequence3),      // 20 min
+            ]),
+            new("FlamingStar",                                  // 5h
+            [
+                new("Red",       SequenceRamps.Sequence3),      // 20 min
+                new("Red",       SequenceRamps.Sequence4),      // 20 min
+                new("Green",     SequenceRamps.Sequence3),      // 20 min
+                new("Green",     SequenceRamps.Sequence4),      // 20 min
+                new("Blue",      SequenceRamps.Sequence3),      // 20 min
+                new("Blue",      SequenceRamps.Sequence4),      // 20 min
+                new("H-Alpha",   SequenceRamps.Sequence1),      // 1 hr
+                new("OIII",      SequenceRamps.Sequence1),      // 1 hr
+                new("SII",       SequenceRamps.Sequence1),      // 1 hr
+            ]),
+        ];
 
-        //string[] filterSequence = ["Red", "Green", "Blue", "Luminance"];
-        //string[] filterSequence = ["Red", "Green", "Blue"];
-        //string[] filterSequence = ["Luminance"];
-        string[] filterSequence = ["H-Alpha", "SII", "OIII"];
-        //string[] filterSequence = ["H-Alpha"];
-        //string[] filterSequence = ["SII", "OIII"];
+        // Old style (every ramp on every filter, one target):
+        //List<TargetPlan> targets = [TargetPlan.EveryFilter("gammacygni", ["H-Alpha", "SII", "OIII"], [SequenceRamps.Sequence2])];
 
-        // Each ramp = ~20 min (RGB) or ~1 hr (Sequence1/Sequence5). See SequenceRamps.cs.
-        List<double[]> sequenceList = [SequenceRamps.Sequence1];
-        //List<double[]> sequenceList = [SequenceRamps.Sequence1];                                                 // 1 hr (narrowband)
-        //List<double[]> sequenceList = [SequenceRamps.Sequence5];                                                 // 1 hr (Luminance)
-        //List<double[]> sequenceList = [SequenceRamps.Sequence1, SequenceRamps.Sequence1, SequenceRamps.Sequence1]; // 3 hr
-
-        string fileNameBase = "2026-06-19-shootlist-Sequence1-gammacygni-HASIIOIII";
+        string fileNameBase = "2026-10-13-shootlist-EasternVeil-M31Panel2-FlamingStar";
 
         // Which files to write:
         bool writeXml = true;
@@ -45,9 +68,7 @@ class Program
         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         var config = new SequenceConfig
         {
-            TargetObject = targetObject,
-            FilterSequence = filterSequence,
-            SequenceList = sequenceList,
+            Targets = targets,
             FileNameBase = fileNameBase,
             StartTemplateName = startTemplateName,
             EndTemplateName = endTemplateName,
@@ -74,6 +95,12 @@ class Program
         if (writeJson)
         {
             lastOutput = JsonSequenceWriter.Write(config, jsonPath);
+        }
+
+        foreach (var plan in config.Targets)
+        {
+            var span = TimeSpan.FromSeconds(plan.ExposureSeconds);
+            Console.WriteLine($"  {plan.TargetName}: {plan.FrameCount} frames, {(int)span.TotalHours}h{span.Minutes:00}m exposure");
         }
 
         int hours = (int)(totalSeconds / 3600);

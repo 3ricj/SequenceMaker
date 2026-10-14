@@ -58,7 +58,10 @@ static class NinaJsonHelper
         }
     }
 
-    public static JObject? FindFirstByName(JToken root, string name, string? typeContains = null)
+    public static JObject? FindFirstByName(JToken root, string name, string? typeContains = null) =>
+        FindAllByName(root, name, typeContains).FirstOrDefault();
+
+    public static IEnumerable<JObject> FindAllByName(JToken root, string name, string? typeContains = null)
     {
         foreach (var obj in WalkObjects(root))
         {
@@ -66,9 +69,8 @@ static class NinaJsonHelper
                 continue;
             if (typeContains != null && !ShortType(obj).Contains(typeContains, StringComparison.Ordinal))
                 continue;
-            return obj;
+            yield return obj;
         }
-        return null;
     }
 
     public static IEnumerable<JObject> FindByType(JToken root, string shortTypeName)

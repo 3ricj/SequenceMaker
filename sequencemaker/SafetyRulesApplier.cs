@@ -19,32 +19,35 @@ static class SafetyRulesApplier
         }
 
         ApplyPrepAbort(root);
-        ApplyImagingDawnCondition(root, dawnTemplate);
-        StripMisplacedDawnConditions(root);
+        var dawnContainer = ApplyImagingDawnCondition(root, dawnTemplate);
+        StripMisplacedDawnConditions(root, dawnContainer);
         EnforceFlatImageType(root);
     }
 
     static void ApplyPrepAbort(JObject root)
     {
-        var prep = NinaJsonHelper.FindFirstByName(root, "Target preparation instructions", "Sequential");
-        if (prep == null)
-            return;
-
-        foreach (var item in NinaJsonHelper.GetValues(prep, "Items").OfType<JObject>())
+        foreach (var prep in NinaJsonHelper.FindAllByName(root, "Target preparation instructions", "Sequential"))
         {
-            if (PrepInstructionTypes.Contains(NinaJsonHelper.ShortType(item)))
+            foreach (var item in NinaJsonHelper.GetValues(prep, "Items").OfType<JObject>())
             {
-                item["ErrorBehavior"] = AbortOnError;
-                item["Attempts"] = 1;
+                if (PrepInstructionTypes.Contains(NinaJsonHelper.ShortType(item)))
+                {
+                    item["ErrorBehavior"] = AbortOnError;
+                    item["Attempts"] = 1;
+                }
             }
         }
     }
 
-    static void ApplyImagingDawnCondition(JObject root, JObject? dawnTemplate)
+    /// <summary>
+    /// The dawn loop goes on the LAST target's imaging container only; on an earlier target it
+    /// would repeat that target all night and the later targets would never run.
+    /// </summary>
+    static JObject? ApplyImagingDawnCondition(JObject root, JObject? dawnTemplate)
     {
-        var imaging = NinaJsonHelper.FindFirstByName(root, "Target imaging instructions", "Sequential");
+        var imaging = NinaJsonHelper.FindAllByName(root, "Target imaging instructions", "Sequential").LastOrDefault();
         if (imaging == null)
-            return;
+            return null;
 
         dawnTemplate ??= new JObject
         {
@@ -64,17 +67,17 @@ static class SafetyRulesApplier
             "Conditions",
             new JArray { dawnTemplate.DeepClone() },
             NinaJsonHelper.ConditionCollectionType);
+        return imaging;
     }
 
     public static void ApplyImagingDawnFromTemplate(JObject root, JObject dawnTemplate) =>
         ApplyImagingDawnCondition(root, dawnTemplate);
 
-    static void StripMisplacedDawnConditions(JObject root)
+    static void StripMisplacedDawnConditions(JObject root, JObject? dawnContainer)
     {
-        foreach (var container in NinaJsonHelper.WalkObjects(root))
+        foreach (var container in NinaJsonHelper.WalkObjects(root).ToList())
         {
-            var name = container["Name"]?.ToString();
-            if (name is "Target imaging instructions")
+            if (ReferenceEquals(container, dawnContainer))
                 continue;
             if (!container.ContainsKey("Conditions"))
                 continue;
